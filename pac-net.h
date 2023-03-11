@@ -8,9 +8,13 @@ struct netif {
   unsigned char hwaddr[6];
 };
 
-struct l2sw {
-  struct netif *ifs[16];
-  int ifs_idx;
-};
+void panic(const char *why);
+void netif_err(struct netif *netif, const char *msg);
+int netif_set_ifflags(struct netif *netif, int flags);
+int netif_set_macaddr(struct netif *netif);
+void hwaddrdump(unsigned char *hwaddr);
+struct netif *init_netif(const char *ifname, int promisc);
+int disable_ip_forward(void);
+void packetwrite(struct netif *netif, unsigned char *buf, size_t size);
 
 #endif

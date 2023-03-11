@@ -15,6 +15,11 @@
 
 #include "pac-net.h"
 
+struct l2sw {
+  struct netif *ifs[16];
+  int ifs_idx;
+};
+
 static void
 switchloop(struct l2sw *l2sw) {
   struct pollfd targets[16];
@@ -42,7 +47,6 @@ switchloop(struct l2sw *l2sw) {
               netif_err(l2sw->ifs[i], "read");
               break;
             }
-
             packetwrite(l2sw->ifs[i], buf, 64);
           }
         }
