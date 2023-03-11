@@ -1,5 +1,5 @@
-#ifndef PAC_NETIF_H
-#define PAC_NETIF_H
+#ifndef PAC_NET_H
+#define PAC_NET_H
 
 struct netif {
   int socket;
