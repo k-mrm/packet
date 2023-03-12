@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <poll.h>
 #include <sys/types.h>
@@ -10,6 +11,7 @@
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #include <linux/if_packet.h>
 
@@ -22,15 +24,56 @@ hwaddrfmt(unsigned char *mac, char *str) {
 }
 
 static void
+ipaddrfmt(uint32_t ipaddr, char *str) {
+  uint8_t *ip = (uint8_t *)&ipaddr;
+
+  snprintf(str, 32, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+}
+
+static const char *
+ip_protocol_fmt(uint8_t proto) {
+  switch(proto) {
+    case IPPROTO_TCP:
+      return "tcp";
+    case IPPROTO_UDP:
+      return "udp";
+    default:
+      return "???";
+  }
+}
+
+static void
+ipv4_packet_dump(unsigned char *buf, size_t size) {
+  struct iphdr *iphdr = (struct iphdr *)buf;
+  char dst[32] = {0};
+  char src[32] = {0};
+
+  ipaddrfmt(iphdr->daddr, dst);
+  ipaddrfmt(iphdr->saddr, src);
+
+  printf("ipv4 %s ---> %s %s\n", src, dst, ip_protocol_fmt(iphdr->protocol));
+}
+
+static void
+ipv6_packet_dump(unsigned char *buf, size_t size) {
+  ;
+}
+
+static void
 packetdump(unsigned char *buf, size_t size) {
   struct ether_header *eth = (struct ether_header *)buf;
-  char dst[128] = {0};
-  char src[128] = {0};
+  unsigned short type = ntohs(eth->ether_type);
 
-  hwaddrfmt(eth->ether_dhost, dst);
-  hwaddrfmt(eth->ether_shost, src);
+  buf += sizeof(struct ether_header);
 
-  printf("dst %s src %s type %#x\n", dst, src, ntohs(eth->ether_type));
+  switch(type) {
+    case 0x0800:    // ipv4
+      ipv4_packet_dump(buf, size);
+      break;
+    case 0x86dd:    // ipv6
+      ipv6_packet_dump(buf, size);
+      break;
+  }
 }
 
 static int
