@@ -75,7 +75,7 @@ ipv6_packet_dump(unsigned char *buf) {
   ipv6addrfmt(dst, d_str);
   ipv6addrfmt(src, s_str);
 
-  printf("ipv6 %s ---> %s", s_str, d_str);
+  printf("ipv6 %s ---> %s %s", s_str, d_str, ip_protocol_fmt(ip6->ip6_nxt));
 }
 
 static void
